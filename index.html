@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lotería Senshi-Kan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #006847;
+    --verde-claro: #00a86b;
+    --verde-oscuro: #004d35;
+    --rojo: #CE1126;
+    --rojo-oscuro: #9b0d1e;
+    --oro: #C49A28;
+    --blanco: #FFFFFF;
+    --blanco-crema: #FFF9F0;
+    --gris: #1a1a1a;
+    --gris-medio: #333;
+    --sombra: rgba(0,0,0,0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--gris);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--blanco);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(0,104,71,0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(206,17,38,0.1) 0%, transparent 50%);
+  }
+
+  /* ===== HEADER ===== */
+  #header {
+    background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde) 100%);
+    padding: 14px 16px 10px;
+    text-align: center;
+    border-bottom: 3px solid var(--oro);
+    position: relative;
+  }
+
+  #header h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 32px;
+    letter-spacing: 4px;
+    color: var(--blanco-crema);
+    line-height: 1;
+  }
+
+  #header p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Botón oculto admin */
+  #btn-admin-trigger {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.15;
+    font-size: 10px;
+    color: white;
+    padding: 0;
+  }
+  #btn-admin-trigger:hover { opacity: 0.4; }
+
+  /* Botón activador oculto */
+  #btn-activador {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  #btn-activador.activo {
+    background: var(--oro);
+    border-color: var(--oro);
+    box-shadow: 0 0 6px var(--oro);
+  }
+
+  /* ===== CONTROLES DE VELOCIDAD ===== */
+  #velocidad-bar {
+    background: var(--verde-oscuro);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  #velocidad-bar span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .btn-vel {
+    flex: 1;
+    padding: 7px 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-vel.activo {
+    background: var(--oro);
+    border-color: var(--oro);
+    color: var(--gris);
+    font-weight: 700;
+  }
+
+  /* ===== ÁREA CARTA PRINCIPAL ===== */
+  #carta-area {
+    padding: 20px 16px 12px;
+    text-align: center;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #carta-numero {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--oro);
+    margin-bottom: 8px;
+  }
+
+  #carta-img-wrapper {
+    position: relative;
+    width: 200px;
+    height: 280px;
+    margin: 0 auto;
+  }
+
+  #carta-img {
+    width: 200px;
+    height: 280px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 3px solid var(--oro);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    background: var(--blanco-crema);
+    transition: opacity 0.3s;
+  }
+
+  #carta-img.animando {
+    animation: cartaEntrada 0.4s ease-out;
+  }
+
+  @keyframes cartaEntrada {
+    0% { transform: scale(0.85) rotateY(-20deg); opacity: 0; }
+    100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+  }
+
+  #carta-nombre {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--blanco-crema);
+    margin-top: 14px;
+    letter-spacing: 1px;
+    min-height: 36px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* Placeholder cuando no ha iniciado */
+  #placeholder-carta {
+    width: 200px;
+    height: 280px;
+    border-radius: 12px;
+    border: 3px dashed rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #placeholder-carta svg { opacity: 0.2; }
+  #placeholder-carta p { color: rgba(255,255,255,0.2); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ===== BOTONES PRINCIPALES ===== */
+  #controles {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-main {
+    flex: 1;
+    padding: 14px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-main:active { transform: scale(0.96); }
+
+  #btn-iniciar {
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(0,168,107,0.35);
+  }
+
+  #btn-iniciar:disabled {
+    background: #333;
+    color: #666;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  #btn-pausa {
+    background: linear-gradient(135deg, #b8860b 0%, var(--oro) 100%);
+    color: var(--gris);
+    box-shadow: 0 4px 16px rgba(196,154,40,0.3);
+    display: none;
+  }
+
+  #btn-terminar {
+    background: linear-gradient(135deg, var(--rojo-oscuro) 0%, var(--rojo) 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(206,17,38,0.3);
+    display: none;
+  }
+
+  /* ===== PROGRESO ===== */
+  #progreso-bar {
+    padding: 0 16px 12px;
+    display: none;
+  }
+
+  #progreso-texto {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #progreso-track {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  #progreso-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--verde-claro), var(--oro));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  /* ===== HISTORIAL MINIATURAS ===== */
+  #historial-section {
+    padding: 8px 16px 16px;
+  }
+
+  #historial-titulo {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  #historial-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mini-carta {
+    width: 46px;
+    height: 64px;
+    border-radius: 5px;
+    object-fit: cover;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    opacity: 0.85;
+    transition: transform 0.2s;
+    background: var(--blanco-crema);
+  }
+
+  .mini-carta:hover { transform: scale(1.1); opacity: 1; }
+
+  /* ===== MODAL ADMIN ===== */
+  #modal-admin {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+
+  #modal-admin.visible { display: flex; align-items: flex-start; justify-content: center; }
+
+  #modal-inner {
+    background: #1e1e1e;
+    border-radius: 16px;
+    border: 1px solid rgba(196,154,40,0.3);
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    margin: auto;
+  }
+
+  #modal-inner h2 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--oro);
+    margin-bottom: 4px;
+  }
+
+  #modal-inner p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  #tablero-input {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .celda-input {
+    aspect-ratio: 1;
+    background: #2a2a2a;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--blanco);
+    width: 100%;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .celda-input:focus {
+    outline: none;
+    border-color: var(--oro);
+    background: #333;
+  }
+
+  .celda-input.valida { border-color: var(--verde-claro); }
+  .celda-input.invalida { border-color: var(--rojo); }
+
+  #modal-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-modal {
+    flex: 1;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  #btn-guardar-tablero {
+    background: var(--verde);
+    color: white;
+  }
+
+  #btn-limpiar-tablero {
+    background: #333;
+    color: rgba(255,255,255,0.6);
+  }
+
+  #btn-cerrar-modal {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.5);
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  #estado-admin {
+    font-size: 12px;
+    color: var(--verde-claro);
+    text-align: center;
+    margin-top: 10px;
+    min-height: 16px;
+  }
+
+  /* ===== CONTADOR REGRESIVO ===== */
+  #countdown-ring {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 36px;
+    height: 36px;
+    display: none;
+  }
+
+  #countdown-ring.visible { display: block; }
+
+  #countdown-circle {
+    fill: none;
+    stroke: var(--oro);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  #countdown-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--oro);
+  }
+
+  /* ===== NOTIFICACIÓN ===== */
+  #notif {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--verde);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    z-index: 2000;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  #notif.visible { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <h1>Lotería</h1>
+  <p>Senshi-Kan</p>
+  <button id="btn-admin-trigger" title="⚙">⚙</button>
+  <button id="btn-activador" title=""></button>
+</div>
+
+<!-- VELOCIDAD -->
+<div id="velocidad-bar">
+  <span>Ritmo</span>
+  <button class="btn-vel activo" data-seg="8">Lento</button>
+  <button class="btn-vel" data-seg="6">Medio</button>
+  <button class="btn-vel" data-seg="4">Rápido</button>
+</div>
+
+<!-- CARTA PRINCIPAL -->
+<div id="carta-area">
+  <div id="carta-numero"></div>
+  <div id="carta-img-wrapper">
+    <div id="placeholder-carta">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <rect x="8" y="4" width="44" height="52" rx="6" stroke="white" stroke-width="2"/>
+        <line x1="16" y1="20" x2="44" y2="20" stroke="white" stroke-width="2"/>
+        <line x1="16" y1="30" x2="44" y2="30" stroke="white" stroke-width="2"/>
+        <line x1="16" y1="40" x2="36" y2="40" stroke="white" stroke-width="2"/>
+      </svg>
+      <p>Listo</p>
+    </div>
+    <img id="carta-img" src="" alt="" style="display:none;">
+    <div id="countdown-ring">
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <circle id="countdown-circle" cx="18" cy="18" r="15" stroke-dasharray="94.2" stroke-dashoffset="0"/>
+      </svg>
+      <div id="countdown-num"></div>
+    </div>
+  </div>
+  <div id="carta-nombre"></div>
+</div>
+
+<!-- BARRA PROGRESO -->
+<div id="progreso-bar">
+  <div id="progreso-texto">
+    <span id="prog-cant">0 cantadas</span>
+    <span id="prog-rest">54 restantes</span>
+  </div>
+  <div id="progreso-track"><div id="progreso-fill"></div></div>
+</div>
+
+<!-- CONTROLES -->
+<div id="controles">
+  <button class="btn-main" id="btn-iniciar">Iniciar</button>
+  <button class="btn-main" id="btn-pausa">Pausa</button>
+  <button class="btn-main" id="btn-terminar">Terminar</button>
+</div>
+
+<!-- HISTORIAL -->
+<div id="historial-section">
+  <div id="historial-titulo">Barajas cantadas</div>
+  <div id="historial-grid"></div>
+</div>
+
+<!-- NOTIFICACIÓN -->
+<div id="notif"></div>
+
+<!-- MODAL ADMIN -->
+<div id="modal-admin">
+  <div id="modal-inner">
+    <h2>Tablero Especial</h2>
+    <p>Introduce los números (1–54) de las 16 barajas del tablero en su posición exacta dentro del arreglo 4×4.</p>
+    <div id="tablero-input">
+      <!-- 16 celdas generadas por JS -->
+    </div>
+    <div id="modal-btns">
+      <button class="btn-modal" id="btn-guardar-tablero">Guardar</button>
+      <button class="btn-modal" id="btn-limpiar-tablero">Limpiar</button>
+    </div>
+    <button id="btn-cerrar-modal">Cerrar</button>
+    <div id="estado-admin"></div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// CONFIGURACIÓN: 54 BARAJAS
+// Formato: [número, "nombre para mostrar", "texto para voz"]
+// Personaliza el texto de voz en el tercer campo de cada baraja
+// =========================================================
+const BARAJAS = [
+  [1,  "El Gallo",        "El Gallo"],
+  [2,  "El Diablito",     "El Diablito"],
+  [3,  "La Dama",         "La Dama"],
+  [4,  "El Catrín",       "El Catrín"],
+  [5,  "El Paraguas",     "El Paraguas"],
+  [6,  "La Sirena",       "La Sirena"],
+  [7,  "La Escalera",     "La Escalera"],
+  [8,  "La Botella",      "La Botella"],
+  [9,  "El Barril",       "El Barril"],
+  [10, "El Árbol",        "El Árbol"],
+  [11, "El Melón",        "El Melón"],
+  [12, "El Valiente",     "El Valiente"],
+  [13, "El Gorrito",      "El Gorrito"],
+  [14, "La Muerte",       "La Muerte"],
+  [15, "La Pera",         "La Pera"],
+  [16, "La Bandera",      "La Bandera"],
+  [17, "El Bandolón",     "El Bandolón"],
+  [18, "El Violoncello",  "El Violoncello"],
+  [19, "La Garza",        "La Garza"],
+  [20, "El Pájaro",       "El Pájaro"],
+  [21, "La Mano",         "La Mano"],
+  [22, "La Bota",         "La Bota"],
+  [23, "La Luna",         "La Luna"],
+  [24, "El Cotorro",      "El Cotorro"],
+  [25, "El Borracho",     "El Borracho"],
+  [26, "El Negrito",      "El Negrito"],
+  [27, "El Corazón",      "El Corazón"],
+  [28, "La Sandía",       "La Sandía"],
+  [29, "El Tambor",       "El Tambor"],
+  [30, "El Camarón",      "El Camarón"],
+  [31, "Las Jaras",       "Las Jaras"],
+  [32, "El Músico",       "El Músico"],
+  [33, "La Araña",        "La Araña"],
+  [34, "El Soldado",      "El Soldado"],
+  [35, "La Estrella",     "La Estrella"],
+  [36, "El Cazo",         "El Cazo"],
+  [37, "El Mundo",        "El Mundo"],
+  [38, "El Apache",       "El Apache"],
+  [39, "El Nopal",        "El Nopal"],
+  [40, "El Alacrán",      "El Alacrán"],
+  [41, "El Paragüero",    "El Paragüero"],
+  [42, "El Huacal",       "El Huacal"],
+  [43, "La Chalupa",      "La Chalupa"],
+  [44, "El Pino",         "El Pino"],
+  [45, "El Payaso",       "El Payaso"],
+  [46, "El Cocodrilo",    "El Cocodrilo"],
+  [47, "La Mariposa",     "La Mariposa"],
+  [48, "El Camello",      "El Camello"],
+  [49, "Las Jaras",       "Las Jaras"],
+  [50, "El Venado",       "El Venado"],
+  [51, "El Sol",          "El Sol"],
+  [52, "La Corona",       "La Corona"],
+  [53, "La Calavera",     "La Calavera"],
+  [54, "La Campana",      "La Campana"],
+];
+
+// URL base de las imágenes
+// El archivo debe llamarse exactamente como lo tienes en tu repo
+// Ejemplo: si la imagen del Gallo es "01-el-gallo.jpg", ajusta aquí:
+const BASE_URL = "https://americordzn-karate.github.io/loteria/";
+
+// Función para construir la URL de cada baraja (ajusta el formato del nombre de archivo)
+function urlBaraja(num, nombre) {
+  // Ajusta este patrón según tus nombres de archivo reales
+  // Ejemplo actual: "01-el-gallo.jpg"
+  const n = String(num).padStart(2, '0');
+  const slug = nombre.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+  return `${BASE_URL}${n}-${slug}.jpg`;
+}
+
+// =========================================================
+// ESTADO
+// =========================================================
+const estado = {
+  corriendo: false,
+  pausado: false,
+  velocidad: 8,
+  mazo: [],          // índices de barajas en orden aleatorio
+  cantadas: [],      // índices ya cantados
+  indiceActual: -1,
+  timer: null,
+  countdownTimer: null,
+  countdownVal: 0,
+  tableroEspecial: new Array(16).fill(null), // números 1-54
+  activadorActivo: false,
+  synth: window.speechSynthesis,
+};
+
+// =========================================================
+// ELEMENTOS DOM
+// =========================================================
+const el = {
+  iniciar: document.getElementById('btn-iniciar'),
+  pausa: document.getElementById('btn-pausa'),
+  terminar: document.getElementById('btn-terminar'),
+  adminTrigger: document.getElementById('btn-admin-trigger'),
+  activador: document.getElementById('btn-activador'),
+  modalAdmin: document.getElementById('modal-admin'),
+  tableroInput: document.getElementById('tablero-input'),
+  guardarTablero: document.getElementById('btn-guardar-tablero'),
+  limpiarTablero: document.getElementById('btn-limpiar-tablero'),
+  cerrarModal: document.getElementById('btn-cerrar-modal'),
+  estadoAdmin: document.getElementById('estado-admin'),
+  cartaArea: document.getElementById('carta-area'),
+  cartaNumero: document.getElementById('carta-numero'),
+  cartaImg: document.getElementById('carta-img'),
+  cartaNombre: document.getElementById('carta-nombre'),
+  placeholderCarta: document.getElementById('placeholder-carta'),
+  historialGrid: document.getElementById('historial-grid'),
+  progresoBar: document.getElementById('progreso-bar'),
+  progCant: document.getElementById('prog-cant'),
+  progRest: document.getElementById('prog-rest'),
+  progresoFill: document.getElementById('progreso-fill'),
+  countdownRing: document.getElementById('countdown-ring'),
+  countdownCircle: document.getElementById('countdown-circle'),
+  countdownNum: document.getElementById('countdown-num'),
+  notif: document.getElementById('notif'),
+  botonesVel: document.querySelectorAll('.btn-vel'),
+};
+
+// =========================================================
+// INICIALIZAR TABLERO DE INPUTS ADMIN
+// =========================================================
+function initTablaAdmin() {
+  el.tableroInput.innerHTML = '';
+  for (let i = 0; i < 16; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = 1;
+    inp.max = 54;
+    inp.className = 'celda-input';
+    inp.placeholder = '#';
+    inp.dataset.pos = i;
+    inp.addEventListener('input', () => validarCelda(inp));
+    inp.addEventListener('keyup', (e) => {
+      if (inp.value.length >= 2) {
+        const next = el.tableroInput.querySelector(`[data-pos="${i+1}"]`);
+        if (next) next.focus();
+      }
+    });
+    el.tableroInput.appendChild(inp);
+  }
+}
+
+function validarCelda(inp) {
+  const v = parseInt(inp.value);
+  if (!inp.value) {
+    inp.className = 'celda-input';
+  } else if (v >= 1 && v <= 54) {
+    inp.className = 'celda-input valida';
+  } else {
+    inp.className = 'celda-input invalida';
+  }
+}
+
+// =========================================================
+// VELOCIDAD
+// =========================================================
+el.botonesVel.forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (estado.corriendo) return;
+    el.botonesVel.forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    estado.velocidad = parseInt(btn.dataset.seg);
+  });
+});
+
+// =========================================================
+// MEZCLA ALEATORIA (Fisher-Yates)
+// =========================================================
+function mezclar(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// =========================================================
+// ALGORITMO ACTIVADOR
+// Mezcla el mazo para que las barajas del tablero especial
+// aparezcan con mayor probabilidad pero con relleno aleatorio
+// =========================================================
+function generarMazoActivado() {
+  const numerosTablero = estado.tableroEspecial.filter(n => n !== null && n >= 1 && n <= 54);
+  const todasIndices = BARAJAS.map((_, i) => i);
+
+  if (numerosTablero.length === 0) return mezclar(todasIndices);
+
+  // Índices de las barajas del tablero
+  const idxTablero = numerosTablero.map(n => n - 1).filter(i => i >= 0 && i < 54);
+  // Índices de las que NO están en el tablero
+  const idxRelleno = todasIndices.filter(i => !idxTablero.includes(i));
+
+  const rellenoMezclado = mezclar(idxRelleno);
+  const tableroMezclado = mezclar(idxTablero);
+
+  // Intercalar: 2-3 rellenos entre cada baraja del tablero
+  const resultado = [];
+  let r = 0;
+
+  tableroMezclado.forEach((idxT, ti) => {
+    // Entre 2 y 3 cartas de relleno antes de cada carta del tablero
+    const cuantos = Math.floor(Math.random() * 2) + 2;
+    for (let k = 0; k < cuantos && r < rellenoMezclado.length; k++) {
+      resultado.push(rellenoMezclado[r++]);
+    }
+    resultado.push(idxT);
+  });
+
+  // Agregar el relleno restante al final
+  while (r < rellenoMezclado.length) {
+    resultado.push(rellenoMezclado[r++]);
+  }
+
+  // Eliminar duplicados (por si acaso)
+  const vistos = new Set();
+  return resultado.filter(i => {
+    if (vistos.has(i)) return false;
+    vistos.add(i);
+    return true;
+  });
+}
+
+// =========================================================
+// CANTAR BARAJA (voz)
+// =========================================================
+function cantarVoz(texto) {
+  if (!estado.synth) return;
+  estado.synth.cancel();
+  const utt = new SpeechSynthesisUtterance(texto);
+  utt.lang = 'es-MX';
+  utt.rate = 0.9;
+  utt.pitch = 1.1;
+  estado.synth.speak(utt);
+}
+
+// =========================================================
+// MOSTRAR BARAJA
+// =========================================================
+function mostrarBaraja(idx) {
+  const baraja = BARAJAS[idx];
+  const [num, nombre, voz] = baraja;
+
+  el.placeholderCarta.style.display = 'none';
+  el.cartaImg.style.display = 'block';
+  el.cartaImg.classList.remove('animando');
+
+  // Pequeño reflow para reiniciar animación
+  void el.cartaImg.offsetWidth;
+
+  el.cartaImg.src = urlBaraja(num, nombre);
+  el.cartaImg.alt = nombre;
+  el.cartaImg.classList.add('animando');
+  el.cartaNumero.textContent = `Nº ${num}`;
+  el.cartaNombre.textContent = nombre;
+
+  // Añadir al historial
+  const mini = document.createElement('img');
+  mini.src = urlBaraja(num, nombre);
+  mini.alt = nombre;
+  mini.className = 'mini-carta';
+  mini.title = `${num}. ${nombre}`;
+  el.historialGrid.prepend(mini);
+
+  // Actualizar progreso
+  const cant = estado.cantadas.length;
+  const rest = 54 - cant;
+  el.progCant.textContent = `${cant} cantada${cant !== 1 ? 's' : ''}`;
+  el.progRest.textContent = `${rest} restante${rest !== 1 ? 's' : ''}`;
+  el.progresoFill.style.width = `${(cant / 54) * 100}%`;
+
+  // Voz
+  cantarVoz(voz);
+}
+
+// =========================================================
+// COUNTDOWN RING
+// =========================================================
+function iniciarCountdown(segundos) {
+  el.countdownRing.classList.add('visible');
+  const circunf = 94.2;
+  el.countdownCircle.style.strokeDashoffset = '0';
+  el.countdownNum.textContent = segundos;
+  estado.countdownVal = segundos;
+
+  clearInterval(estado.countdownTimer);
+  estado.countdownTimer = setInterval(() => {
+    estado.countdownVal--;
+    if (estado.countdownVal <= 0) {
+      clearInterval(estado.countdownTimer);
+      el.countdownRing.classList.remove('visible');
+      return;
+    }
+    el.countdownNum.textContent = estado.countdownVal;
+    const offset = circunf - (circunf * estado.countdownVal / segundos);
+    el.countdownCircle.style.strokeDashoffset = offset;
+  }, 1000);
+}
+
+// =========================================================
+// CICLO PRINCIPAL
+// =========================================================
+function siguienteCarta() {
+  estado.indiceActual++;
+
+  if (estado.indiceActual >= estado.mazo.length) {
+    terminarJugada(true);
+    return;
+  }
+
+  const idx = estado.mazo[estado.indiceActual];
+  estado.cantadas.push(idx);
+  mostrarBaraja(idx);
+  iniciarCountdown(estado.velocidad);
+
+  estado.timer = setTimeout(() => {
+    if (estado.corriendo && !estado.pausado) {
+      siguienteCarta();
+    }
+  }, estado.velocidad * 1000);
+}
+
+// =========================================================
+// INICIAR
+// =========================================================
+function iniciarJugada() {
+  estado.corriendo = true;
+  estado.pausado = false;
+  estado.cantadas = [];
+  estado.indiceActual = -1;
+  el.historialGrid.innerHTML = '';
+  el.progresoBar.style.display = 'block';
+  el.cartaNombre.textContent = '';
+  el.cartaNumero.textContent = '';
+  el.progresoFill.style.width = '0%';
+
+  // Generar mazo
+  if (estado.activadorActivo) {
+    estado.mazo = generarMazoActivado();
+  } else {
+    estado.mazo = mezclar(BARAJAS.map((_, i) => i));
+  }
+
+  // UI
+  el.iniciar.style.display = 'none';
+  el.pausa.style.display = 'block';
+  el.terminar.style.display = 'block';
+  el.botonesVel.forEach(b => b.disabled = true);
+
+  mostrarNotif('¡Comienza la jugada!');
+  siguienteCarta();
+}
+
+// =========================================================
+// PAUSA / REANUDAR
+// =========================================================
+function togglePausa() {
+  if (!estado.pausado) {
+    estado.pausado = true;
+    clearTimeout(estado.timer);
+    clearInterval(estado.countdownTimer);
+    el.countdownRing.classList.remove('visible');
+    estado.synth.cancel();
+    el.pausa.textContent = 'Reanudar';
+    el.pausa.style.background = 'linear-gradient(135deg, #555 0%, #777 100%)';
+    mostrarNotif('Juego en pausa');
+  } else {
+    estado.pausado = false;
+    el.pausa.textContent = 'Pausa';
+    el.pausa.style.background = 'linear-gradient(135deg, #b8860b 0%, var(--oro) 100%)';
+    // Repetir la voz de la carta actual antes de continuar
+    if (estado.indiceActual >= 0) {
+      const idx = estado.mazo[estado.indiceActual];
+      cantarVoz(BARAJAS[idx][2]);
+    }
+    iniciarCountdown(estado.velocidad);
+    estado.timer = setTimeout(siguienteCarta, estado.velocidad * 1000);
+  }
+}
+
+// =========================================================
+// TERMINAR
+// =========================================================
+function terminarJugada(agotadas = false) {
+  estado.corriendo = false;
+  estado.pausado = false;
+  clearTimeout(estado.timer);
+  clearInterval(estado.countdownTimer);
+  el.countdownRing.classList.remove('visible');
+  estado.synth.cancel();
+
+  el.iniciar.style.display = 'block';
+  el.iniciar.disabled = false;
+  el.pausa.style.display = 'none';
+  el.terminar.style.display = 'none';
+  el.pausa.textContent = 'Pausa';
+  el.pausa.style.background = 'linear-gradient(135deg, #b8860b 0%, var(--oro) 100%)';
+  el.botonesVel.forEach(b => b.disabled = false);
+
+  const msg = agotadas
+    ? `¡Jugada completa! ${estado.cantadas.length} barajas cantadas`
+    : `Jugada terminada — ${estado.cantadas.length} barajas cantadas`;
+  mostrarNotif(msg);
+}
+
+// =========================================================
+// EVENTOS BOTONES PRINCIPALES
+// =========================================================
+el.iniciar.addEventListener('click', iniciarJugada);
+el.pausa.addEventListener('click', togglePausa);
+el.terminar.addEventListener('click', () => terminarJugada(false));
+
+// =========================================================
+// ADMIN
+// =========================================================
+el.adminTrigger.addEventListener('click', () => {
+  el.modalAdmin.classList.add('visible');
+  // Cargar valores guardados
+  const celdas = el.tableroInput.querySelectorAll('.celda-input');
+  celdas.forEach((c, i) => {
+    c.value = estado.tableroEspecial[i] !== null ? estado.tableroEspecial[i] : '';
+    validarCelda(c);
+  });
+  el.estadoAdmin.textContent = '';
+});
+
+el.cerrarModal.addEventListener('click', () => {
+  el.modalAdmin.classList.remove('visible');
+});
+
+el.guardarTablero.addEventListener('click', () => {
+  const celdas = el.tableroInput.querySelectorAll('.celda-input');
+  let errores = 0;
+  const nums = new Set();
+
+  celdas.forEach((c, i) => {
+    const v = parseInt(c.value);
+    if (c.value && (v < 1 || v > 54)) {
+      errores++;
+    } else if (c.value && nums.has(v)) {
+      errores++;
+      c.className = 'celda-input invalida';
+    } else {
+      estado.tableroEspecial[i] = c.value ? v : null;
+      if (c.value) nums.add(v);
+    }
+  });
+
+  if (errores > 0) {
+    el.estadoAdmin.style.color = '#e57373';
+    el.estadoAdmin.textContent = 'Revisa los valores duplicados o fuera de rango.';
+  } else {
+    el.estadoAdmin.style.color = '#66bb6a';
+    const registradas = estado.tableroEspecial.filter(n => n !== null).length;
+    el.estadoAdmin.textContent = `Tablero guardado: ${registradas} baraja${registradas !== 1 ? 's' : ''} registrada${registradas !== 1 ? 's' : ''}.`;
+  }
+});
+
+el.limpiarTablero.addEventListener('click', () => {
+  estado.tableroEspecial = new Array(16).fill(null);
+  const celdas = el.tableroInput.querySelectorAll('.celda-input');
+  celdas.forEach(c => {
+    c.value = '';
+    c.className = 'celda-input';
+  });
+  el.estadoAdmin.style.color = 'rgba(255,255,255,0.4)';
+  el.estadoAdmin.textContent = 'Tablero limpiado.';
+});
+
+// =========================================================
+// ACTIVADOR
+// =========================================================
+el.activador.addEventListener('click', () => {
+  estado.activadorActivo = !estado.activadorActivo;
+  el.activador.classList.toggle('activo', estado.activadorActivo);
+});
+
+// =========================================================
+// NOTIFICACIÓN
+// =========================================================
+let notifTimer;
+function mostrarNotif(msg) {
+  el.notif.textContent = msg;
+  el.notif.classList.add('visible');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => el.notif.classList.remove('visible'), 2800);
+}
+
+// =========================================================
+// INIT
+// =========================================================
+initTablaAdmin();
+</script>
+</body>
+</html>
