@@ -137,9 +137,9 @@
 
   /* ===== ÁREA CARTA PRINCIPAL ===== */
   #carta-area {
-    padding: 20px 16px 12px;
+    padding: 16px 16px 10px;
     text-align: center;
-    min-height: 320px;
+    min-height: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -148,7 +148,7 @@
 
   #carta-numero {
     font-family: 'Bebas Neue', cursive;
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 3px;
     color: var(--oro);
     margin-bottom: 8px;
@@ -156,14 +156,14 @@
 
   #carta-img-wrapper {
     position: relative;
-    width: 200px;
-    height: 280px;
+    width: 240px;
+    height: 336px;
     margin: 0 auto;
   }
 
   #carta-img {
-    width: 200px;
-    height: 280px;
+    width: 240px;
+    height: 336px;
     object-fit: contain;
     border-radius: 12px;
     border: 3px solid var(--oro);
@@ -192,20 +192,28 @@
     text-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
 
-  /* Placeholder cuando no ha iniciado */
+  /* Placeholder / Portada antes de iniciar */
   #placeholder-carta {
-    width: 200px;
-    height: 280px;
+    width: 240px;
+    height: 336px;
     border-radius: 12px;
-    border: 3px dashed rgba(255,255,255,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 8px;
+    overflow: hidden;
+    border: 3px solid var(--oro);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   }
-  #placeholder-carta svg { opacity: 0.2; }
-  #placeholder-carta p { color: rgba(255,255,255,0.2); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* =========================================================
+     IMAGEN DE PORTADA
+     Archivo: Portada.jpg — debe estar en el mismo repositorio
+     que las 54 barajas (BASE_URL).
+     Si la imagen no carga se muestra un fondo oscuro sin error.
+  ========================================================= */
+  #img-portada {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   /* ===== BOTONES PRINCIPALES ===== */
   #controles {
@@ -517,13 +525,13 @@
   <div id="carta-numero"></div>
   <div id="carta-img-wrapper">
     <div id="placeholder-carta">
-      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-        <rect x="8" y="4" width="44" height="52" rx="6" stroke="white" stroke-width="2"/>
-        <line x1="16" y1="20" x2="44" y2="20" stroke="white" stroke-width="2"/>
-        <line x1="16" y1="30" x2="44" y2="30" stroke="white" stroke-width="2"/>
-        <line x1="16" y1="40" x2="36" y2="40" stroke="white" stroke-width="2"/>
-      </svg>
-      <p>Listo</p>
+      <!--
+        PORTADA: imagen que se muestra antes de iniciar la jugada.
+        El archivo "Portada.jpg" debe estar en el mismo repositorio
+        que las 54 barajas (BASE_URL definido en el JS).
+        Se asigna el src correcto al cargar la página (ver JS → INIT).
+      -->
+      <img id="img-portada" src="" alt="Lotería Senshi-Kan">
     </div>
     <img id="carta-img" src="" alt="" style="display:none;">
     <div id="countdown-ring">
@@ -938,7 +946,21 @@ function iniciarJugada() {
   el.botonesVel.forEach(b => b.disabled = true);
 
   mostrarNotif('¡Comienza la jugada!');
-  siguienteCarta();
+
+  // =========================================================
+  // COMANDO DE VOZ INTRODUCTORIO
+  // Se canta "Corre y se va con," antes de la primera baraja.
+  // Puedes personalizar el texto entre comillas.
+  // =========================================================
+  const fraseIntro = "Corre y se va con,";
+  cantarVoz(fraseIntro);
+
+  // Esperar a que termine la frase intro (~1.5 s) antes de la primera carta
+  setTimeout(() => {
+    if (estado.corriendo && !estado.pausado) {
+      siguienteCarta();
+    }
+  }, 1500);
 }
 
 // =========================================================
@@ -986,6 +1008,13 @@ function terminarJugada(agotadas = false) {
   el.pausa.textContent = 'Pausa';
   el.pausa.style.background = 'linear-gradient(135deg, #b8860b 0%, var(--oro) 100%)';
   el.botonesVel.forEach(b => b.disabled = false);
+
+  // Restaurar portada y ocultar carta
+  el.cartaImg.style.display = 'none';
+  el.cartaImg.src = '';
+  el.placeholderCarta.style.display = 'block';
+  el.cartaNombre.textContent = '';
+  el.cartaNumero.textContent = '';
 
   const msg = agotadas
     ? `¡Jugada completa! ${estado.cantadas.length} barajas cantadas`
@@ -1080,6 +1109,9 @@ function mostrarNotif(msg) {
 // INIT
 // =========================================================
 initTablaAdmin();
+
+// Cargar imagen de portada desde el repositorio
+document.getElementById('img-portada').src = `${BASE_URL}Portada.jpg`;
 </script>
 </body>
 </html>
