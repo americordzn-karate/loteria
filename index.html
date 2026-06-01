@@ -648,14 +648,12 @@ const BASE_URL = "https://americordzn-karate.github.io/loteria/";
 
 // Función para construir la URL de cada baraja (ajusta el formato del nombre de archivo)
 function urlBaraja(num, nombre) {
-  // Ajusta este patrón según tus nombres de archivo reales
-  // Ejemplo actual: "01-el-gallo.jpg"
-  const n = String(num).padStart(2, '0');
-  const slug = nombre.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
-  return `${BASE_URL}${n}-${slug}.jpg`;
+  // Formato real de archivos: "1 el gallo.jpg", "2 el diablito.jpg", etc.
+  // OPCIÓN A (sin acentos en el archivo): descomenta la siguiente línea y comenta la de OPCIÓN B
+  // const nombreLimpio = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // OPCIÓN B (con acentos en el archivo, ej: "10 el árbol.jpg"): usa esta línea
+  const nombreLimpio = nombre.toLowerCase();
+  return `${BASE_URL}${encodeURIComponent(`${num} ${nombreLimpio}`)}.jpg`;
 }
 
 // =========================================================
