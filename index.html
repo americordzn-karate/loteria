@@ -499,7 +499,7 @@
 <!-- HEADER -->
 <div id="header">
   <h1>Lotería</h1>
-  <p>Senshi-Kan</p>
+  <p>Mexicana</p>
   <button id="btn-admin-trigger" title="⚙">⚙</button>
   <button id="btn-activador" title=""></button>
 </div>
@@ -625,20 +625,20 @@ const BARAJAS = [
   [38, "El Apache",       "El Apache"],
   [39, "El Nopal",        "El Nopal"],
   [40, "El Alacrán",      "El Alacrán"],
-  [41, "El Paragüero",    "El Paragüero"],
-  [42, "El Huacal",       "El Huacal"],
-  [43, "La Chalupa",      "La Chalupa"],
-  [44, "El Pino",         "El Pino"],
-  [45, "El Payaso",       "El Payaso"],
-  [46, "El Cocodrilo",    "El Cocodrilo"],
-  [47, "La Mariposa",     "La Mariposa"],
-  [48, "El Camello",      "El Camello"],
-  [49, "Las Jaras",       "Las Jaras"],
-  [50, "El Venado",       "El Venado"],
-  [51, "El Sol",          "El Sol"],
-  [52, "La Corona",       "La Corona"],
-  [53, "La Calavera",     "La Calavera"],
-  [54, "La Campana",      "La Campana"],
+  [41, "La Rosa",    "La Rosa"],
+  [42, "La Calavera",       "La Calavera"],
+  [43, "La Campana",      "La Campana"],
+  [44, "El Cantarito",         "El Cantarito"],
+  [45, "El Venado",       "El Venado"],
+  [46, "El Sol",    "El Sol"],
+  [47, "La Corona",     "La Corona"],
+  [48, "La Chalupa",      "La Chalupa"],
+  [49, "El Pino",       "El Pino"],
+  [50, "El Pescado",       "El Pescado"],
+  [51, "La Palma",          "La Palma"],
+  [52, "La Maceta",       "La Maceta"],
+  [53, "El Arpa",     "El Arpa"],
+  [54, "La Rana",      "La Rana"],
 ];
 
 // URL base de las imágenes
@@ -650,9 +650,9 @@ const BASE_URL = "https://americordzn-karate.github.io/loteria/";
 function urlBaraja(num, nombre) {
   // Formato real de archivos: "1 el gallo.jpg", "2 el diablito.jpg", etc.
   // OPCIÓN A (sin acentos en el archivo): descomenta la siguiente línea y comenta la de OPCIÓN B
-  // const nombreLimpio = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const nombreLimpio = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   // OPCIÓN B (con acentos en el archivo, ej: "10 el árbol.jpg"): usa esta línea
-  const nombreLimpio = nombre.toLowerCase();
+  // const nombreLimpio = nombre.toLowerCase();
   return `${BASE_URL}${encodeURIComponent(`${num} ${nombreLimpio}`)}.jpg`;
 }
 
@@ -790,7 +790,7 @@ function generarMazoActivado() {
 
   tableroMezclado.forEach((idxT, ti) => {
     // Entre 2 y 3 cartas de relleno antes de cada carta del tablero
-    const cuantos = Math.floor(Math.random() * 2) + 2;
+    const cuantos = Math.floor(Math.random() * 2) + 1;
     for (let k = 0; k < cuantos && r < rellenoMezclado.length; k++) {
       resultado.push(rellenoMezclado[r++]);
     }
