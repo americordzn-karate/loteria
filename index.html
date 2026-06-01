@@ -564,8 +564,8 @@
 <!-- MODAL ADMIN -->
 <div id="modal-admin">
   <div id="modal-inner">
-    <h2>Tablero Especial</h2>
-    <p>Introduce los números (1–54) de las 16 barajas del tablero en su posición exacta dentro del arreglo 4×4.</p>
+    <h2> </h2>
+    <p> </p>
     <div id="tablero-input">
       <!-- 16 celdas generadas por JS -->
     </div>
@@ -790,7 +790,7 @@ function generarMazoActivado() {
 
   tableroMezclado.forEach((idxT, ti) => {
     // Entre 2 y 3 cartas de relleno antes de cada carta del tablero
-    const cuantos = Math.floor(Math.random() * 2) + 1;
+    const cuantos = Math.floor(Math.random() * 1.5) + 1;
     for (let k = 0; k < cuantos && r < rellenoMezclado.length; k++) {
       resultado.push(rellenoMezclado[r++]);
     }
